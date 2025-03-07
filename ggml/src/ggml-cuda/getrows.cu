@@ -10,8 +10,8 @@ static __global__ void k_get_rows(
         /*const size_t nb00,*/ const size_t nb01, const size_t nb02, const size_t nb03,
         const size_t s10, const size_t s11, const size_t s12/*, const size_t s13*/) {
 
-    const int i00 = (blockIdx.x*blockDim.x + threadIdx.x)*2;
-    const int i10 =  blockDim.y*blockIdx.y + threadIdx.y;
+    const int i00 = (blockIdx.y*blockDim.x + threadIdx.x)*2;
+    const int i10 = blockDim.y*blockIdx.x + threadIdx.y;
     const int i11 = (blockIdx.z*blockDim.z + threadIdx.z)/ne12;
     const int i12 = (blockIdx.z*blockDim.z + threadIdx.z)%ne12;
 
@@ -46,10 +46,12 @@ static __global__ void k_get_rows_float(
         /*const size_t nb00,*/ const size_t nb01, const size_t nb02, const size_t nb03,
         const size_t s10, const size_t s11, const size_t s12/*, const size_t s13*/) {
 
-    const int i00 =  blockIdx.x*blockDim.x + threadIdx.x;
-    const int i10 =  blockDim.y*blockIdx.y + threadIdx.y;
+
+    const int i00 = blockIdx.y*blockDim.x + threadIdx.x;
+    const int i10 = blockDim.y*blockIdx.x + threadIdx.y;
     const int i11 = (blockIdx.z*blockDim.z + threadIdx.z)/ne12;
     const int i12 = (blockIdx.z*blockDim.z + threadIdx.z)%ne12;
+    
 
     if (i00 >= ne00) {
         return;
@@ -95,7 +97,7 @@ static void get_rows_cuda(
 
     const dim3 block_dims(CUDA_GET_ROWS_BLOCK_SIZE, 1, 1);
     const int block_num_x = (ne00 + 2*CUDA_GET_ROWS_BLOCK_SIZE - 1) / (2*CUDA_GET_ROWS_BLOCK_SIZE);
-    const dim3 block_nums(block_num_x, ne10, ne11*ne12);
+    const dim3 block_nums(ne10, block_num_x, ne11*ne12);
 
     // strides in elements
     //const size_t s0 = nb0 / ggml_element_size(dst);
@@ -132,7 +134,7 @@ static void get_rows_cuda_float(
 
     const dim3 block_dims(CUDA_GET_ROWS_BLOCK_SIZE, 1, 1);
     const int block_num_x = (ne00 + CUDA_GET_ROWS_BLOCK_SIZE - 1) / CUDA_GET_ROWS_BLOCK_SIZE;
-    const dim3 block_nums(block_num_x, ne10, ne11*ne12);
+    const dim3 block_nums(ne10, block_num_x, ne11*ne12);
 
     // strides in elements
     //const size_t s0 = nb0 / ggml_element_size(dst);
